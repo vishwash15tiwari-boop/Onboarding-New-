@@ -269,12 +269,13 @@ function buildDashboardPayload() {
     return { stage:k, count:stageMap[k].count, avgDays:avg(stageMap[k].stageDays) };
   });
 
-  // ── Cases for table (limit 500) ───────────────────
-  var tableCases = cases.slice(0, 500).map(function(c){
+  // ── Cases for table (limit 1000) ──────────────────
+  var tableCases = cases.slice(0, 1000).map(function(c){
     return {
       id             : c.id,
       name           : String(c.business_name||'').trim(),
       gstin          : String(c.gstin_number||'').trim(),
+      city           : String(c.city||'').trim(),
       state          : String(c.state||'').trim(),
       category       : String(c.business_category||'').trim(),
       vendorType     : String(c.vendor_type||'').trim(),
@@ -301,6 +302,10 @@ function buildDashboardPayload() {
       l2r2           : String(c.level2_rejected2||'').trim(),
       l3r1           : String(c.level3_rejected1||'').trim(),
       l3r2           : String(c.level3_rejected2||'').trim(),
+      l4r1           : String(c.level4_rejected1||'').trim(),
+      l4r2           : String(c.level4_rejected2||'').trim(),
+      contactPerson  : String(c.contact_person||c.contact_name||'').trim(),
+      remarks        : String(c.remarks||c.notes||'').trim(),
     };
   });
 

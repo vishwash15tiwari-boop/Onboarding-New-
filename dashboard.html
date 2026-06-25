@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Onboarding Control Tower</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F8F9FB;--surface:#fff;--border:#E8EAED;--border-light:#F0F2F5;
+  --text:#0F1117;--text2:#5F6B7C;--text3:#8C95A1;
+  --accent:#1A56DB;--accent-bg:#EEF2FF;
+  --green:#059669;--green-bg:#ECFDF5;--green-light:#D1FAE5;
+  --amber:#D97706;--amber-bg:#FFFBEB;--amber-light:#FDE68A;
+  --orange:#EA580C;--orange-bg:#FFF7ED;--orange-light:#FED7AA;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-light:#FECACA;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;
+  --r:12px;--shadow:0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.03);
+  --shadow-md:0 4px 12px rgba(0,0,0,.06),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.1),0 4px 8px rgba(0,0,0,.06);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px}
+
+/* ── HEADER ────────────────────────────────── */
+.hdr{position:sticky;top:0;z-index:100;height:56px;background:rgba(255,255,255,.95);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:0 20px}
+.hdr-brand{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.hdr-logo{width:30px;height:30px;border-radius:8px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;color:#fff}
+.hdr-title{font-size:14px;font-weight:700}
+.hdr-sub{font-size:10px;color:var(--text3)}
+.hdiv{width:1px;height:24px;background:var(--border);flex-shrink:0}
+.hdr-ts{font-size:11px;color:var(--text3);white-space:nowrap}
+.hdr-right{display:flex;align-items:center;gap:6px;margin-left:auto}
+.hbtn{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);
+  background:var(--surface);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);transition:all .15s}
+.hbtn:hover{background:var(--bg);color:var(--text)}
+.avatar{width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+
+/* ── MAIN NAV TABS ──────────────────────────── */
+.nav-bar{background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 20px;display:flex;align-items:center;gap:2px;position:sticky;top:56px;z-index:99}
+.ntab{padding:12px 14px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;
+  gap:6px;white-space:nowrap;transition:all .15s}
+.ntab:hover:not(.on){color:var(--text);background:var(--bg);border-radius:6px 6px 0 0}
+.ntab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.ntab-ct{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
+  padding:0 5px;border-radius:9px;background:var(--accent-bg);color:var(--accent);
+  font-size:10px;font-weight:700}
+.ntab.on .ntab-ct{background:var(--accent);color:#fff}
+
+/* ── CONTENT ────────────────────────────────── */
+.main{padding:20px;max-width:1640px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.tab-pane{display:none}.tab-pane.on{display:contents}
+
+/* ── CARDS / SECTIONS ───────────────────────── */
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow)}
+.cp{padding:18px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.sec-title{font-size:13px;font-weight:700}
+.sec-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* ── BADGES ─────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;white-space:nowrap}
+.bg-green{background:var(--green-bg);color:var(--green)}
+.bg-amber{background:var(--amber-bg);color:var(--amber)}
+.bg-orange{background:var(--orange-bg);color:var(--orange)}
+.bg-red{background:var(--red-bg);color:var(--red)}
+.bg-blue{background:var(--accent-bg);color:var(--accent)}
+.bg-purple{background:var(--purple-bg);color:var(--purple)}
+.bg-gray{background:var(--border-light);color:var(--text2)}
+
+/* ── KPI GRID ───────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.kpi{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);
+  box-shadow:var(--shadow);padding:14px 15px;transition:box-shadow .15s,transform .15s;cursor:default}
+.kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.kpi-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;
+  justify-content:center;margin-bottom:9px}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:4px}
+.kpi-val{font-size:24px;font-weight:800;color:var(--text);line-height:1}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:4px}
+.kpi-bar{height:3px;border-radius:2px;margin-top:8px;background:var(--border);overflow:hidden}
+.kpi-fill{height:100%;border-radius:2px;transition:width .6s ease}
+
+/* ── PIPELINE FUNNEL ────────────────────────── */
+.funnel{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden}
+.ps{padding:14px 10px;background:var(--surface);text-align:center;border-right:1px solid var(--border);
+  cursor:pointer;transition:background .15s;position:relative}
+.ps:last-child{border-right:none}
+.ps:hover{background:var(--bg)}
+.ps-name{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:6px}
+.ps-num{font-size:26px;font-weight:800;line-height:1;margin-bottom:2px}
+.ps-sub{font-size:10px;color:var(--text3)}
+.ps-pct{display:inline-block;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700;margin-top:4px}
+.ps-arr{position:absolute;right:-9px;top:50%;width:17px;height:17px;background:var(--surface);
+  border-right:1px solid var(--border);border-top:1px solid var(--border);
+  transform:translateY(-50%) rotate(45deg);z-index:1}
+.ps:last-child .ps-arr{display:none}
+
+/* ── CHART LAYOUTS ──────────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:1100px){.two-col,.three-col{grid-template-columns:1fr}}
+.chart-box{height:200px;position:relative}
+.chart-box-lg{height:240px;position:relative}
+
+/* ── INSIGHT TABLE ──────────────────────────── */
+.itbl{width:100%;border-collapse:collapse}
+.itbl th{padding:7px 11px;font-size:9px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);text-align:right}
+.itbl th:first-child{text-align:left}
+.itbl td{padding:9px 11px;font-size:12px;border-bottom:1px solid var(--border-light);text-align:right}
+.itbl td:first-child{text-align:left;font-weight:600}
+.itbl tr:last-child td{border-bottom:none}
+.itbl tr:hover td{background:var(--bg)}
+.vdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;margin-right:6px}
+.prog-bar{height:4px;border-radius:2px;background:var(--border);overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-left:6px}
+.prog-fill{height:100%;border-radius:2px}
+
+/* ── SLA CARDS ──────────────────────────────── */
+.sla-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:900px){.sla-grid{grid-template-columns:repeat(2,1fr)}}
+.sla-card{border-radius:var(--r);border:1px solid;padding:16px;cursor:pointer;transition:box-shadow .15s}
+.sla-card:hover{box-shadow:var(--shadow-md)}
+.sla-card.green{background:var(--green-bg);border-color:var(--green-light)}
+.sla-card.amber{background:var(--amber-bg);border-color:var(--amber-light)}
+.sla-card.orange{background:var(--orange-bg);border-color:var(--orange-light)}
+.sla-card.red{background:var(--red-bg);border-color:var(--red-light)}
+.sla-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;margin-bottom:10px}
+.sla-val{font-size:28px;font-weight:800;line-height:1}
+.sla-lbl{font-size:11px;font-weight:600;margin-top:3px}
+.sla-sub{font-size:10px;margin-top:2px;opacity:.75}
+
+/* ── URGENCY LIST ───────────────────────────── */
+.ulist{display:flex;flex-direction:column;gap:1px}
+.urow{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;
+  cursor:pointer;transition:background .12s}
+.urow:hover{background:var(--bg)}
+.urow-id{font-size:11px;font-weight:700;color:var(--accent);width:80px;flex-shrink:0}
+.urow-name{font-size:12px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.urow-meta{font-size:10px;color:var(--text3);white-space:nowrap}
+
+/* ── PROCESS / STAGE CARDS ──────────────────── */
+.stage-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.stage-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:15px;cursor:pointer;transition:box-shadow .15s,border-color .15s}
+.stage-card:hover{box-shadow:var(--shadow-md);border-color:#CBD5E1}
+.stage-card.active{border-color:var(--accent);background:var(--accent-bg)}
+.sc-num{font-size:28px;font-weight:800;line-height:1}
+.sc-name{font-size:11px;font-weight:700;margin-top:4px}
+.sc-days{font-size:10px;color:var(--text3);margin-top:2px}
+.sc-bar{height:3px;border-radius:2px;background:var(--border);overflow:hidden;margin-top:9px}
+
+/* ── PENDING ACTIONS ────────────────────────── */
+.pact-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.pact{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.pact:hover{box-shadow:var(--shadow-md);border-color:#CBD5E1}
+.pact-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.pact-val{font-size:22px;font-weight:800;line-height:1}
+.pact-lbl{font-size:10px;color:var(--text2);font-weight:600;margin-top:2px}
+
+/* ── CASE TABLE ─────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+.ctbl{width:100%;border-collapse:collapse;min-width:1100px}
+.ctbl th{padding:9px 12px;font-size:9px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);
+  background:var(--bg);text-align:left;cursor:pointer;user-select:none;white-space:nowrap}
+.ctbl th:hover{color:var(--text)}
+.ctbl td{padding:10px 12px;font-size:12px;border-bottom:1px solid var(--border-light);white-space:nowrap}
+.ctbl tr{cursor:pointer}
+.ctbl tr:hover td{background:#FAFBFC}
+.cid{font-size:11px;font-weight:700;color:var(--accent)}
+.vname{font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;display:block}
+.gstin{font-size:10px;color:var(--text3);font-family:monospace}
+
+/* ── TOOLBAR ────────────────────────────────── */
+.toolbar{display:flex;align-items:center;gap:8px;padding:11px 14px;
+  border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tsearch{flex:1;min-width:180px;max-width:280px;display:flex;align-items:center;gap:7px;
+  background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:0 10px;height:32px;
+  transition:border-color .15s}
+.tsearch:focus-within{border-color:var(--accent)}
+.tsearch input{border:none;background:transparent;flex:1;font-size:12px;font-family:inherit;outline:none}
+.fsel{height:32px;padding:0 10px;border:1px solid var(--border);border-radius:7px;
+  font-size:11px;font-family:inherit;background:var(--bg);color:var(--text);cursor:pointer;outline:none;
+  transition:border-color .15s}
+.fsel:focus{border-color:var(--accent)}
+.tbtn{height:32px;padding:0 10px;border-radius:7px;border:1px solid var(--border);
+  background:var(--surface);font-size:11px;font-weight:600;cursor:pointer;color:var(--text2);
+  display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s}
+.tbtn:hover{border-color:#CBD5E1;color:var(--text)}
+.tbtn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.ml-a{margin-left:auto;display:flex;gap:6px;align-items:center}
+.pg-info{font-size:11px;color:var(--text3)}
+.pgn{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-top:1px solid var(--border)}
+.pgb{width:28px;height:28px;border-radius:5px;border:1px solid var(--border);background:var(--surface);
+  font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);transition:all .15s}
+.pgb.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pgb:hover:not(.on):not(:disabled){background:var(--bg)}
+.pgb:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── DRAWER ─────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:200;opacity:0;
+  pointer-events:none;transition:opacity .2s}
+.overlay.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:520px;background:var(--surface);
+  box-shadow:var(--shadow-lg);z-index:201;transform:translateX(100%);
+  transition:transform .22s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+.drawer.on{transform:translateX(0)}
+@media(max-width:600px){.drawer{width:100%}}
+.dwr-hdr{padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;gap:10px;flex-shrink:0}
+.dwr-info{flex:1}
+.dwr-id{font-size:12px;font-weight:700;color:var(--accent)}
+.dwr-name{font-size:15px;font-weight:800;margin-top:2px}
+.dwr-meta{font-size:11px;color:var(--text3);margin-top:3px}
+.dcls{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);flex-shrink:0;transition:all .15s}
+.dcls:hover{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.dtabs{display:flex;border-bottom:1px solid var(--border);padding:0 20px;flex-shrink:0}
+.dtab{padding:9px 0;margin-right:16px;font-size:12px;font-weight:600;color:var(--text3);
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
+.dtab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.dtab:hover:not(.on){color:var(--text)}
+.dbody{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.dlbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.6px;margin-bottom:8px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ditem{display:flex;flex-direction:column;gap:2px}
+.dk{font-size:10px;color:var(--text3);font-weight:600}
+.dv{font-size:13px;color:var(--text);font-weight:600}
+
+/* Process tracker */
+.tracker{display:flex;flex-direction:column;gap:0}
+.tr-step{display:flex;gap:12px;position:relative}
+.tr-line{display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0}
+.tr-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;z-index:1}
+.tr-dot.done{background:var(--green);color:#fff}
+.tr-dot.pending{background:var(--border);color:var(--text3)}
+.tr-dot.active{background:var(--amber);color:#fff}
+.tr-dot.rejected{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red)}
+.tr-conn{width:2px;flex:1;min-height:18px;background:var(--border);margin:2px 0}
+.tr-conn.done{background:var(--green)}
+.tr-body{flex:1;padding-bottom:14px}
+.tr-name{font-size:12px;font-weight:700}
+.tr-meta{font-size:10px;color:var(--text3);margin-top:2px}
+.tr-reject{font-size:10px;color:var(--red);background:var(--red-bg);padding:3px 7px;
+  border-radius:4px;margin-top:4px;display:inline-block}
+
+/* Doc summary */
+.doc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.doc-item{text-align:center;padding:10px 6px;border-radius:9px;border:1px solid var(--border)}
+.doc-num{font-size:20px;font-weight:800;line-height:1}
+.doc-lbl{font-size:9px;font-weight:700;color:var(--text3);margin-top:3px;text-transform:uppercase}
+
+/* Activity */
+.act-item{display:flex;gap:10px;padding-bottom:12px}
+.act-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px}
+.act-body{flex:1}
+.act-event{font-size:12px;font-weight:600}
+.act-time{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* ── STATE BARS ─────────────────────────────── */
+.state-row{display:flex;align-items:center;gap:9px;padding:5px 0}
+.state-name{font-size:11px;font-weight:600;width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.state-bar-wrap{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.state-bar-fill{height:100%;border-radius:4px;background:var(--accent)}
+.state-count{font-size:11px;font-weight:600;width:32px;text-align:right;flex-shrink:0}
+
+/* ── MISC ───────────────────────────────────── */
+.empty{text-align:center;padding:36px;color:var(--text3);font-size:12px}
+.sort-icon{display:inline-block;opacity:.4;margin-left:3px;font-size:9px}
+.sort-asc .sort-icon{opacity:1;transform:rotate(180deg)}
+.sort-desc .sort-icon{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-logo"><i data-lucide="package" style="width:16px;height:16px"></i></div>
+    <div><div class="hdr-title">Onboarding Control Tower</div>
+    <div class="hdr-sub">Operations Dashboard</div></div>
+  </div>
+  <div class="hdiv"></div>
+  <div class="hdr-ts" id="hdrTs"></div>
+  <div class="hdr-right">
+    <button class="hbtn" title="Refresh" onclick="location.reload()"><i data-lucide="refresh-cw" style="width:14px;height:14px"></i></button>
+    <div class="avatar">VT</div>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<nav class="nav-bar">
+  <div class="ntab on" data-tab="pipeline">
+    <i data-lucide="git-branch" style="width:13px;height:13px"></i> Pipeline
+  </div>
+  <div class="ntab" data-tab="tat">
+    <i data-lucide="clock" style="width:13px;height:13px"></i> TAT &amp; SLA
+  </div>
+  <div class="ntab" data-tab="process">
+    <i data-lucide="layers" style="width:13px;height:13px"></i> Process
+  </div>
+  <div class="ntab" data-tab="business">
+    <i data-lucide="bar-chart-2" style="width:13px;height:13px"></i> Business
+  </div>
+  <div class="ntab" data-tab="cases">
+    <i data-lucide="search" style="width:13px;height:13px"></i> Case Explorer
+    <span class="ntab-ct" id="caseCount">0</span>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ══════════════════════════════════════════
+     TAB 1 — PIPELINE
+══════════════════════════════════════════════ -->
+<div class="tab-pane on" id="tab-pipeline">
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- Funnel -->
+  <div class="card">
+    <div class="cp">
+      <div class="sec-hdr">
+        <div><div class="sec-title">Pipeline Funnel</div>
+        <div class="sec-sub">Lead → Onboarding stages</div></div>
+      </div>
+      <div class="funnel" id="funnel"></div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="two-col">
+    <div class="card"><div class="cp">
+      <div class="sec-hdr"><div class="sec-title">Monthly Trend</div></div>
+      <div class="chart-box"><canvas id="trendChart"></canvas></div>
+    </div></div>
+    <div class="card"><div class="cp">
+      <div class="sec-hdr"><div class="sec-title">Vertical Split</div></div>
+      <div class="chart-box"><canvas id="vertChart"></canvas></div>
+    </div></div>
+  </div>
+
+  <!-- Category table -->
+  <div class="card">
+    <div class="cp">
+      <div class="sec-hdr"><div><div class="sec-title">Category Performance</div>
+      <div class="sec-sub">Onboarding by business category</div></div></div>
+      <div class="tbl-wrap">
+        <table class="itbl">
+          <thead><tr>
+            <th>Category</th><th>Total</th><th>Active</th><th>Onboarded</th>
+            <th>Churned</th><th>Deactivated</th><th>Avg TAT</th><th>LTV (&#8377;)</th>
+          </tr></thead>
+          <tbody id="catTbl"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-pipeline -->
+
+<!-- ══════════════════════════════════════════
+     TAB 2 — TAT & SLA
+══════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-tat">
+
+  <!-- SLA Cards -->
+  <div class="sla-grid" id="slaCards"></div>
+
+  <!-- Charts -->
+  <div class="two-col">
+    <div class="card"><div class="cp">
+      <div class="sec-hdr"><div class="sec-title">TAT Distribution</div></div>
+      <div class="chart-box-lg"><canvas id="tatChart"></canvas></div>
+    </div></div>
+    <div class="card"><div class="cp">
+      <div class="sec-hdr"><div class="sec-title">Top States by Volume</div></div>
+      <div id="stateBars" style="padding-top:4px"></div>
+    </div></div>
+  </div>
+
+  <!-- Urgency List -->
+  <div class="card">
+    <div class="cp">
+      <div class="sec-hdr">
+        <div><div class="sec-title">Cases by Urgency</div>
+        <div class="sec-sub">Active cases sorted by SLA status</div></div>
+        <div style="display:flex;gap:6px">
+          <span class="badge bg-red" id="sla-overdue-ct">0 Overdue</span>
+          <span class="badge bg-orange" id="sla-atrisk-ct">0 At Risk</span>
+        </div>
+      </div>
+      <div class="ulist" id="urgencyList"></div>
+    </div>
+  </div>
+
+</div><!-- /tab-tat -->
+
+<!-- ══════════════════════════════════════════
+     TAB 3 — PROCESS
+══════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-process">
+
+  <!-- Pending Actions -->
+  <div class="card"><div class="cp">
+    <div class="sec-hdr"><div class="sec-title">Pending Action Queue</div></div>
+    <div class="pact-grid" id="pendingGrid"></div>
+  </div></div>
+
+  <!-- Stage Breakdown -->
+  <div class="card"><div class="cp">
+    <div class="sec-hdr"><div><div class="sec-title">Stage Breakdown</div>
+    <div class="sec-sub">Cases by current pipeline stage</div></div></div>
+    <div class="stage-grid" id="stageCards"></div>
+  </div></div>
+
+</div><!-- /tab-process -->
+
+<!-- ══════════════════════════════════════════
+     TAB 4 — BUSINESS
+══════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-business">
+
+  <!-- Vertical Table -->
+  <div class="card"><div class="cp">
+    <div class="sec-hdr"><div class="sec-title">By Vertical (Vendor Type)</div></div>
+    <div class="tbl-wrap">
+      <table class="itbl">
+        <thead><tr>
+          <th>Vertical</th><th>Total</th><th>Active</th><th>Onboarded</th>
+          <th>Churned</th><th>Deactivated</th><th>Avg TAT</th><th>LTV (&#8377;)</th>
+        </tr></thead>
+        <tbody id="vertTbl"></tbody>
+      </table>
+    </div>
+  </div></div>
+
+  <!-- Category Table (same data, different view) -->
+  <div class="card"><div class="cp">
+    <div class="sec-hdr"><div class="sec-title">By Category (Waste Type)</div></div>
+    <div class="tbl-wrap">
+      <table class="itbl">
+        <thead><tr>
+          <th>Category</th><th>Total</th><th>Active</th><th>Onboarded</th>
+          <th>Churned</th><th>Avg TAT</th><th>Onboard Rate</th>
+        </tr></thead>
+        <tbody id="catTbl2"></tbody>
+      </table>
+    </div>
+  </div></div>
+
+  <!-- Top LTV -->
+  <div class="card"><div class="cp">
+    <div class="sec-hdr"><div class="sec-title">Top Vendors by Lifetime Value</div></div>
+    <div class="tbl-wrap">
+      <table class="itbl">
+        <thead><tr>
+          <th>Vendor</th><th>Category</th><th>Status</th><th>LTV (&#8377;)</th>
+        </tr></thead>
+        <tbody id="ltvTbl"></tbody>
+      </table>
+    </div>
+  </div></div>
+
+</div><!-- /tab-business -->
+
+<!-- ══════════════════════════════════════════
+     TAB 5 — CASE EXPLORER
+══════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-cases">
+  <div class="card">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="tsearch">
+        <i data-lucide="search" style="width:13px;height:13px;color:var(--text3);flex-shrink:0"></i>
+        <input type="text" id="srchQ" placeholder="Search ID, name, GSTIN…" oninput="filterCases()">
+      </div>
+      <select class="fsel" id="fVert" onchange="filterCases()">
+        <option value="">All Verticals</option>
+      </select>
+      <select class="fsel" id="fCat" onchange="filterCases()">
+        <option value="">All Categories</option>
+      </select>
+      <select class="fsel" id="fStage" onchange="filterCases()">
+        <option value="">All Stages</option>
+        <option>Lead</option><option>In Progress</option><option>In Review</option>
+        <option>L2 Committee</option><option>L3 Approval</option>
+        <option>Onboarded</option><option>Reactivated</option>
+        <option>Churned</option><option>Deactivated</option><option>Sent Back</option><option>Rejected</option>
+      </select>
+      <select class="fsel" id="fSLA" onchange="filterCases()">
+        <option value="">All SLA</option>
+        <option>On Track</option><option>Due Today</option>
+        <option>At Risk</option><option>Overdue</option>
+      </select>
+      <button class="tbtn" onclick="clearFilters()">
+        <i data-lucide="x" style="width:11px;height:11px"></i> Clear
+      </button>
+      <div class="ml-a">
+        <span class="pg-info" id="caseInfo">—</span>
+      </div>
+    </div>
+    <!-- Table -->
+    <div class="tbl-wrap">
+      <table class="ctbl" id="caseTbl">
+        <thead>
+          <tr>
+            <th data-col="id">ID <span class="sort-icon">↓</span></th>
+            <th data-col="name">Vendor</th>
+            <th data-col="vendorType">Vertical</th>
+            <th data-col="category">Category</th>
+            <th data-col="state">State</th>
+            <th data-col="stage">Stage</th>
+            <th data-col="slaStatus">SLA</th>
+            <th data-col="tatDays">TAT</th>
+            <th data-col="ageDays">Age (d)</th>
+            <th data-col="createdDate">Created</th>
+            <th data-col="currentStatus">Status</th>
+          </tr>
+        </thead>
+        <tbody id="caseTblBody"></tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    <div class="pgn">
+      <span class="pg-info" id="pgInfo">—</span>
+      <div style="display:flex;gap:4px" id="pgBtns"></div>
+    </div>
+  </div>
+</div><!-- /tab-cases -->
+
+</main><!-- /main -->
+
+<!-- DRAWER -->
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dwr-hdr">
+    <div class="dwr-info">
+      <div class="dwr-id" id="dId"></div>
+      <div class="dwr-name" id="dName"></div>
+      <div class="dwr-meta" id="dMeta"></div>
+    </div>
+    <div id="dBadge"></div>
+    <button class="dcls" onclick="closeDrawer()">
+      <i data-lucide="x" style="width:14px;height:14px"></i>
+    </button>
+  </div>
+  <div class="dtabs">
+    <div class="dtab on" data-dtab="overview">Overview</div>
+    <div class="dtab" data-dtab="journey">Journey</div>
+    <div class="dtab" data-dtab="documents">Documents</div>
+    <div class="dtab" data-dtab="activity">Activity</div>
+  </div>
+  <div class="dbody" id="dbody"></div>
+</div>
+
+<script>
+const D = <?!= payload ?>;
+
+// ── Helpers ──────────────────────────────────────────
+function fmt(n){return n==null?'—':n.toLocaleString('en-IN')}
+function fmtDays(d){return d==null?'—':d+'d'}
+function pct(a,b){return b?Math.round(a/b*100):0}
+
+const STATUS_COLOR = {
+  ONBOARDED:'bg-green', REACTIVATED:'bg-blue', CHURNED:'bg-red',
+  DEACTIVATED:'bg-gray', 'SENT_BACK':'bg-amber', SENTBACK:'bg-amber',
+  REJECTED:'bg-red', UNKNOWN:'bg-gray'
+};
+const SLA_COLOR = {
+  'On Track':'bg-green','Due Today':'bg-amber','At Risk':'bg-orange',
+  'Overdue':'bg-red','Completed':'bg-gray','Unknown':'bg-gray'
+};
+function slaBadge(s){return `<span class="badge ${SLA_COLOR[s]||'bg-gray'}">${s||'—'}</span>`}
+function statusBadge(s){
+  var k=(s||'').toUpperCase().replace(/\s+/g,'_');
+  return `<span class="badge ${STATUS_COLOR[k]||'bg-gray'}">${s||'—'}</span>`;
+}
+
+// ── Timestamp ────────────────────────────────────────
+document.getElementById('hdrTs').textContent = 'Last updated: ' + D.generatedAt;
+
+// ── Tab navigation ───────────────────────────────────
+document.querySelectorAll('.ntab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('on')});
+    document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('on')});
+    tab.classList.add('on');
+    var pane = document.getElementById('tab-'+tab.dataset.tab);
+    if(pane) pane.classList.add('on');
+  });
+});
+
+// ── KPI Grid ─────────────────────────────────────────
+function buildKPIs(){
+  var bs = D.byStatus||{}, p = D.pipeline||{}, sla = D.sla||{}, pa = D.pendingActions||{};
+  var onb   = (bs.ONBOARDED||0)+(bs.REACTIVATED||0);
+  var inProg = (bs.INPROGRESS||0)+(bs.IN_PROGRESS||0);
+  var inRev  = (bs.INREVIEW||0)+(bs.IN_REVIEW||0);
+  var leads  = D.total - onb - (bs.CHURNED||0) - (bs.DEACTIVATED||0) - inProg - inRev;
+  if(leads < 0) leads = 0;
+
+  var kpis = [
+    {lbl:'Total Cases', val:D.total, icon:'users', color:'#1A56DB', bg:'#EEF2FF', sub:'All registered'},
+    {lbl:'Onboarded', val:onb, icon:'check-circle-2', color:'#059669', bg:'#ECFDF5',
+     sub:pct(onb,D.total)+'% conversion', pct:pct(onb,D.total), barColor:'#059669'},
+    {lbl:'In Review', val:p.l1Done||0, icon:'eye', color:'#7C3AED', bg:'#F5F3FF', sub:'Awaiting approval'},
+    {lbl:'In Progress', val:inProg||pa.awaitingDocs||0, icon:'clock', color:'#D97706', bg:'#FFFBEB', sub:'Docs stage'},
+    {lbl:'Churned', val:bs.CHURNED||0, icon:'user-minus', color:'#DC2626', bg:'#FEF2F2',
+     sub:pct(bs.CHURNED||0,D.total)+'% of total'},
+    {lbl:'Deactivated', val:bs.DEACTIVATED||0, icon:'user-x', color:'#6B7280', bg:'#F9FAFB', sub:'Inactive'},
+    {lbl:'Reactivated', val:bs.REACTIVATED||0, icon:'refresh-cw', color:'#0891B2', bg:'#ECFEFF', sub:'Recovered'},
+    {lbl:'Avg TAT', val:D.avgTAT+'d', icon:'timer', color:'#1A56DB', bg:'#EEF2FF', sub:'Days to onboard'},
+    {lbl:'SLA Breached', val:sla.overdue||0, icon:'alert-triangle', color:'#DC2626', bg:'#FEF2F2', sub:'Past 30-day SLA'},
+    {lbl:'Pending Approvals', val:(pa.awaitingL1||0)+(pa.awaitingL2||0)+(pa.awaitingL3||0),
+     icon:'file-check', color:'#D97706', bg:'#FFFBEB', sub:'L1+L2+L3'}
+  ];
+
+  var g = document.getElementById('kpiGrid');
+  g.innerHTML = kpis.map(function(k){
+    var barW = k.pct ? k.pct : '';
+    return '<div class="kpi">'+
+      '<div class="kpi-icon" style="background:'+k.bg+'">'+
+        '<i data-lucide="'+k.icon+'" style="width:14px;height:14px;color:'+k.color+'"></i>'+
+      '</div>'+
+      '<div class="kpi-lbl">'+k.lbl+'</div>'+
+      '<div class="kpi-val">'+k.val+'</div>'+
+      '<div class="kpi-sub">'+k.sub+'</div>'+
+      (barW ? '<div class="kpi-bar"><div class="kpi-fill" style="width:'+barW+'%;background:'+k.barColor+'"></div></div>' : '')+
+    '</div>';
+  }).join('');
+}
+
+// ── Pipeline Funnel ───────────────────────────────────
+function buildFunnel(){
+  var p = D.pipeline||{};
+  var stages = [
+    {name:'Registered', num:p.registered||0, color:'#1A56DB'},
+    {name:'L1 Review', num:p.l1Done||0, color:'#7C3AED'},
+    {name:'L2 Committee', num:p.l2Done||0, color:'#D97706'},
+    {name:'L3 Approval', num:p.l3Done||0, color:'#0891B2'},
+    {name:'L4 Final', num:p.l4Done||0, color:'#059669'},
+    {name:'Onboarded', num:p.onboarded||0, color:'#059669'}
+  ];
+  var max = p.registered || 1;
+  document.getElementById('funnel').innerHTML = stages.map(function(s, i){
+    var p2 = pct(s.num, max);
+    return '<div class="ps">'+
+      '<div class="ps-name">'+s.name+'</div>'+
+      '<div class="ps-num" style="color:'+s.color+'">'+s.num+'</div>'+
+      '<div class="ps-pct bg-blue">'+p2+'%</div>'+
+      (i < stages.length-1 ? '<div class="ps-arr"></div>' : '')+
+    '</div>';
+  }).join('');
+}
+
+// ── Charts ────────────────────────────────────────────
+var chartInstances = {};
+function mkChart(id, cfg){
+  if(chartInstances[id]) chartInstances[id].destroy();
+  var ctx = document.getElementById(id);
+  if(!ctx) return;
+  chartInstances[id] = new Chart(ctx, cfg);
+}
+
+var CHART_COLORS = ['#1A56DB','#7C3AED','#059669','#D97706','#0891B2','#DC2626','#EA580C','#6B7280'];
+
+function buildTrendChart(){
+  var mt = D.monthlyTrend||[];
+  mkChart('trendChart',{
+    type:'bar',
+    data:{
+      labels: mt.map(function(m){ return m.month.replace(/^(\d+)-0?(\d+)$/,'$2/$1'); }),
+      datasets:[
+        {label:'Registered', data:mt.map(function(m){return m.total}), backgroundColor:'#DBEAFE', borderRadius:3},
+        {label:'Onboarded',  data:mt.map(function(m){return m.onboarded}), backgroundColor:'#1A56DB', borderRadius:3}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'#F0F2F5'},ticks:{font:{size:9}}}}}
+  });
+}
+
+function buildVertChart(){
+  var vt = D.verticals||[];
+  mkChart('vertChart',{
+    type:'doughnut',
+    data:{
+      labels: vt.map(function(v){return v.name}),
+      datasets:[{data: vt.map(function(v){return v.total}),
+        backgroundColor: CHART_COLORS, borderWidth:0, hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10,padding:8}}}}
+  });
+}
+
+function buildTATChart(){
+  var tb = D.tatBuckets||{};
+  var keys = ['0-7','8-15','16-30','31-60','60+'];
+  var colors = ['#059669','#10B981','#D97706','#EA580C','#DC2626'];
+  mkChart('tatChart',{
+    type:'bar',
+    data:{
+      labels: keys,
+      datasets:[{label:'Cases', data: keys.map(function(k){return tb[k]||0}),
+        backgroundColor: colors, borderRadius:5}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10}}},
+        y:{grid:{color:'#F0F2F5'},ticks:{font:{size:10}}}}}
+  });
+}
+
+// ── Category Table ────────────────────────────────────
+function buildCatTable(tbodyId, showRate){
+  var tb = document.getElementById(tbodyId);
+  if(!tb) return;
+  var cats = D.categories||[];
+  var max = cats.length ? cats[0].total : 1;
+  tb.innerHTML = cats.map(function(c){
+    var rate = pct(c.onboarded, c.total);
+    return '<tr>'+
+      '<td><span class="vdot" style="background:'+CHART_COLORS[0]+'"></span>'+c.name+'</td>'+
+      '<td>'+c.total+'</td>'+
+      '<td>'+(c.active||0)+'</td>'+
+      '<td><span style="color:var(--green);font-weight:700">'+c.onboarded+'</span></td>'+
+      (showRate ? '<td>'+rate+'%</td>' : '<td><span style="color:var(--red)">'+c.churned+'</span></td>')+
+      (showRate ? '' : '<td>'+c.deactivated+'</td>')+
+      '<td>'+fmtDays(c.avgTAT)+'</td>'+
+      (showRate ? '' : '<td>'+fmt(c.ltv)+'</td>')+
+    '</tr>';
+  }).join('') || '<tr><td colspan="8" class="empty">No data</td></tr>';
+}
+
+// ── Vertical Table ────────────────────────────────────
+function buildVertTable(){
+  var tb = document.getElementById('vertTbl');
+  if(!tb) return;
+  var verts = D.verticals||[];
+  tb.innerHTML = verts.map(function(v, i){
+    return '<tr>'+
+      '<td><span class="vdot" style="background:'+CHART_COLORS[i%CHART_COLORS.length]+'"></span>'+v.name+'</td>'+
+      '<td>'+v.total+'</td>'+
+      '<td>'+(v.active||0)+'</td>'+
+      '<td><span style="color:var(--green);font-weight:700">'+v.onboarded+'</span></td>'+
+      '<td><span style="color:var(--red)">'+v.churned+'</span></td>'+
+      '<td>'+v.deactivated+'</td>'+
+      '<td>'+fmtDays(v.avgTAT)+'</td>'+
+      '<td>'+fmt(v.ltv)+'</td>'+
+    '</tr>';
+  }).join('') || '<tr><td colspan="8" class="empty">No data</td></tr>';
+}
+
+// ── Top LTV Table ─────────────────────────────────────
+function buildLTVTable(){
+  var tb = document.getElementById('ltvTbl');
+  if(!tb) return;
+  tb.innerHTML = (D.topLTV||[]).map(function(v){
+    return '<tr>'+
+      '<td style="font-weight:700">'+v.name+'</td>'+
+      '<td>'+v.category+'</td>'+
+      '<td>'+statusBadge(v.status)+'</td>'+
+      '<td style="font-weight:700;color:var(--accent)">₹'+fmt(v.ltv)+'</td>'+
+    '</tr>';
+  }).join('') || '<tr><td colspan="4" class="empty">No data</td></tr>';
+}
+
+// ── SLA Cards ─────────────────────────────────────────
+function buildSLACards(){
+  var s = D.sla||{};
+  var cards = [
+    {key:'onTrack',  label:'On Track',  sub:'Within SLA', cls:'green',  icon:'check-circle', val:s.onTrack||0},
+    {key:'dueToday', label:'Due Today', sub:'SLA expires today', cls:'amber', icon:'clock', val:s.dueToday||0},
+    {key:'atRisk',   label:'At Risk',   sub:'Expiring in 5 days', cls:'orange', icon:'alert-circle', val:s.atRisk||0},
+    {key:'overdue',  label:'Overdue',   sub:'Past 30-day SLA', cls:'red', icon:'alert-triangle', val:s.overdue||0}
+  ];
+  var iconColors = {green:'var(--green)',amber:'var(--amber)',orange:'var(--orange)',red:'var(--red)'};
+  var valColors  = {green:'var(--green)',amber:'var(--amber)',orange:'var(--orange)',red:'var(--red)'};
+  document.getElementById('slaCards').innerHTML = cards.map(function(c){
+    return '<div class="sla-card '+c.cls+'" onclick="filterBySLA(\''+c.label+'\')">' +
+      '<div class="sla-icon" style="background:rgba(0,0,0,.06)">'+
+        '<i data-lucide="'+c.icon+'" style="width:16px;height:16px;color:'+iconColors[c.cls]+'"></i>'+
+      '</div>'+
+      '<div class="sla-val" style="color:'+valColors[c.cls]+'">'+c.val+'</div>'+
+      '<div class="sla-lbl" style="color:'+valColors[c.cls]+'">'+c.label+'</div>'+
+      '<div class="sla-sub">'+c.sub+'</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('sla-overdue-ct').textContent = (s.overdue||0)+' Overdue';
+  document.getElementById('sla-atrisk-ct').textContent  = (s.atRisk||0)+' At Risk';
+}
+
+// ── Urgency List ──────────────────────────────────────
+function buildUrgencyList(){
+  var order = {'Overdue':0,'Due Today':1,'At Risk':2,'On Track':3,'Completed':4,'Unknown':5};
+  var sorted = (D.cases||[])
+    .filter(function(c){return c.slaStatus && c.slaStatus !== 'Completed' && c.slaStatus !== 'Unknown';})
+    .sort(function(a,b){ return (order[a.slaStatus]||9)-(order[b.slaStatus]||9); })
+    .slice(0,50);
+  var ul = document.getElementById('urgencyList');
+  if(!sorted.length){ ul.innerHTML='<div class="empty">No active cases with SLA data</div>'; return; }
+  ul.innerHTML = sorted.map(function(c){
+    return '<div class="urow" onclick="openCase(\''+c.id+'\')">'+ 
+      '<span class="urow-id">'+c.id+'</span>'+
+      '<span class="urow-name">'+c.name+'</span>'+
+      '<span class="urow-meta">'+c.stage+'</span>'+
+      '<span class="urow-meta">'+(c.ageDays!=null?c.ageDays+'d':'—')+'</span>'+
+      slaBadge(c.slaStatus)+
+    '</div>';
+  }).join('');
+}
+
+// ── State Bars ────────────────────────────────────────
+function buildStateBars(){
+  var st = D.states||[];
+  if(!st.length){ document.getElementById('stateBars').innerHTML='<div class="empty">No state data</div>'; return; }
+  var max = st[0].count || 1;
+  document.getElementById('stateBars').innerHTML = st.map(function(s){
+    return '<div class="state-row">'+
+      '<div class="state-name">'+s.name+'</div>'+
+      '<div class="state-bar-wrap"><div class="state-bar-fill" style="width:'+pct(s.count,max)+'%"></div></div>'+
+      '<div class="state-count">'+s.count+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── Pending Actions ───────────────────────────────────
+function buildPendingActions(){
+  var pa = D.pendingActions||{};
+  var items = [
+    {icon:'upload-cloud',   color:'#7C3AED', bg:'#F5F3FF', val:pa.awaitingDocs||0,  lbl:'Awaiting Docs Upload'},
+    {icon:'file-check',     color:'#1A56DB', bg:'#EEF2FF', val:pa.awaitingL1||0,    lbl:'Awaiting L1 Review'},
+    {icon:'users',          color:'#0891B2', bg:'#ECFEFF', val:pa.awaitingL2||0,    lbl:'Awaiting L2 Committee'},
+    {icon:'shield-check',   color:'#059669', bg:'#ECFDF5', val:pa.awaitingL3||0,    lbl:'Awaiting L3 Approval'},
+    {icon:'corner-down-left',color:'#D97706',bg:'#FFFBEB', val:pa.sentBack||0,      lbl:'Sent Back'},
+    {icon:'alert-triangle', color:'#DC2626', bg:'#FEF2F2', val:pa.tatBreached||0,   lbl:'TAT Breached'}
+  ];
+  document.getElementById('pendingGrid').innerHTML = items.map(function(a){
+    return '<div class="pact">'+
+      '<div class="pact-icon" style="background:'+a.bg+'">'+
+        '<i data-lucide="'+a.icon+'" style="width:16px;height:16px;color:'+a.color+'"></i>'+
+      '</div>'+
+      '<div><div class="pact-val">'+a.val+'</div><div class="pact-lbl">'+a.lbl+'</div></div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── Stage Cards ───────────────────────────────────────
+function buildStageCards(){
+  var sb = D.stageBreakdown||[];
+  var order = ['Lead','In Progress','In Review','L2 Committee','L3 Approval','Onboarded','Reactivated','Churned','Deactivated','Sent Back','Rejected'];
+  sb.sort(function(a,b){ return (order.indexOf(a.stage)||99)-(order.indexOf(b.stage)||99); });
+  var stageColors = {
+    Lead:'#1A56DB', 'In Progress':'#7C3AED', 'In Review':'#D97706',
+    'L2 Committee':'#0891B2', 'L3 Approval':'#059669', Onboarded:'#059669',
+    Churned:'#DC2626', Deactivated:'#6B7280', Reactivated:'#0891B2',
+    'Sent Back':'#D97706', Rejected:'#DC2626'
+  };
+  var max = sb.length ? Math.max.apply(null, sb.map(function(s){return s.count;})) : 1;
+  document.getElementById('stageCards').innerHTML = sb.map(function(s){
+    var col = stageColors[s.stage]||'#6B7280';
+    return '<div class="stage-card">'+
+      '<div class="sc-num" style="color:'+col+'">'+s.count+'</div>'+
+      '<div class="sc-name">'+s.stage+'</div>'+
+      '<div class="sc-days">Avg '+fmtDays(s.avgDays)+' in stage</div>'+
+      '<div class="sc-bar"><div style="height:100%;width:'+pct(s.count,max)+'%;background:'+col+';border-radius:2px"></div></div>'+
+    '</div>';
+  }).join('') || '<div class="empty">No stage data available</div>';
+}
+
+// ── Case Explorer ─────────────────────────────────────
+var CUR_CASES = [];
+var CUR_PAGE  = 1;
+var PAGE_SIZE = 20;
+var SORT_COL  = 'ageDays';
+var SORT_ASC  = false;
+
+function populateFilters(){
+  var verts  = [...new Set((D.cases||[]).map(function(c){return c.vendorType}).filter(Boolean))].sort();
+  var cats   = [...new Set((D.cases||[]).map(function(c){return c.category}).filter(Boolean))].sort();
+  var fv = document.getElementById('fVert');
+  var fc = document.getElementById('fCat');
+  verts.forEach(function(v){ var o=document.createElement('option'); o.value=o.textContent=v; fv.appendChild(o); });
+  cats.forEach(function(c){  var o=document.createElement('option'); o.value=o.textContent=c; fc.appendChild(o); });
+}
+
+function filterCases(){
+  var q    = document.getElementById('srchQ').value.trim().toLowerCase();
+  var fv   = document.getElementById('fVert').value;
+  var fc   = document.getElementById('fCat').value;
+  var fs   = document.getElementById('fStage').value;
+  var fsla = document.getElementById('fSLA').value;
+  CUR_CASES = (D.cases||[]).filter(function(c){
+    if(q && !((c.id||'').toLowerCase().includes(q)||
+              (c.name||'').toLowerCase().includes(q)||
+              (c.gstin||'').toLowerCase().includes(q))) return false;
+    if(fv   && c.vendorType !== fv)   return false;
+    if(fc   && c.category   !== fc)   return false;
+    if(fs   && c.stage      !== fs)   return false;
+    if(fsla && c.slaStatus  !== fsla) return false;
+    return true;
+  });
+  sortCases();
+  CUR_PAGE = 1;
+  renderTable();
+  document.getElementById('caseCount').textContent = D.cases ? D.cases.length : 0;
+}
+
+function sortCases(){
+  CUR_CASES.sort(function(a,b){
+    var av = a[SORT_COL], bv = b[SORT_COL];
+    if(av==null) av = SORT_ASC ? Infinity : -Infinity;
+    if(bv==null) bv = SORT_ASC ? Infinity : -Infinity;
+    if(typeof av==='string') return SORT_ASC ? av.localeCompare(bv) : bv.localeCompare(av);
+    return SORT_ASC ? av-bv : bv-av;
+  });
+}
+
+function renderTable(){
+  var start = (CUR_PAGE-1)*PAGE_SIZE;
+  var rows  = CUR_CASES.slice(start, start+PAGE_SIZE);
+  var tbody = document.getElementById('caseTblBody');
+  tbody.innerHTML = rows.map(function(c){
+    return '<tr onclick="openCase(\''+c.id+'\')">'+ 
+      '<td><span class="cid">'+c.id+'</span></td>'+
+      '<td><span class="vname">'+c.name+'</span><span class="gstin">'+c.gstin+'</span></td>'+
+      '<td>'+c.vendorType+'</td>'+
+      '<td>'+c.category+'</td>'+
+      '<td>'+c.state+'</td>'+
+      '<td>'+c.stage+'</td>'+
+      '<td>'+slaBadge(c.slaStatus)+'</td>'+
+      '<td>'+fmtDays(c.tatDays)+'</td>'+
+      '<td>'+fmtDays(c.ageDays)+'</td>'+
+      '<td>'+c.createdDate+'</td>'+
+      '<td>'+statusBadge(c.currentStatus)+'</td>'+
+    '</tr>';
+  }).join('') || '<tr><td colspan="11" class="empty">No matching cases</td></tr>';
+
+  var total = CUR_CASES.length;
+  var pages = Math.ceil(total/PAGE_SIZE);
+  document.getElementById('pgInfo').textContent = total + ' cases — page ' + CUR_PAGE + ' of ' + (pages||1);
+  document.getElementById('caseInfo').textContent = total + ' results';
+
+  var pb = document.getElementById('pgBtns');
+  pb.innerHTML = '';
+  var mkPgb = function(label, page, disabled, active){
+    var b = document.createElement('button');
+    b.className = 'pgb' + (active?' on':'');
+    b.textContent = label;
+    b.disabled = disabled;
+    if(!disabled) b.onclick = function(){ CUR_PAGE=page; renderTable(); };
+    return b;
+  };
+  pb.appendChild(mkPgb('‹', CUR_PAGE-1, CUR_PAGE<=1, false));
+  var lo = Math.max(1,CUR_PAGE-2), hi = Math.min(pages,lo+4);
+  for(var pg=lo;pg<=hi;pg++) pb.appendChild(mkPgb(pg, pg, false, pg===CUR_PAGE));
+  pb.appendChild(mkPgb('›', CUR_PAGE+1, CUR_PAGE>=pages, false));
+}
+
+// Sort on header click
+document.getElementById('caseTbl').querySelectorAll('th[data-col]').forEach(function(th){
+  th.addEventListener('click', function(){
+    var col = th.dataset.col;
+    if(SORT_COL===col) SORT_ASC=!SORT_ASC; else { SORT_COL=col; SORT_ASC=false; }
+    document.querySelectorAll('.ctbl th').forEach(function(t){ t.className=''; });
+    th.className = SORT_ASC ? 'sort-asc' : 'sort-desc';
+    sortCases(); renderTable();
+  });
+});
+
+function clearFilters(){
+  document.getElementById('srchQ').value='';
+  document.getElementById('fVert').value='';
+  document.getElementById('fCat').value='';
+  document.getElementById('fStage').value='';
+  document.getElementById('fSLA').value='';
+  filterCases();
+}
+
+function filterBySLA(status){
+  document.getElementById('fSLA').value = status;
+  // Switch to Case Explorer tab
+  document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('on')});
+  document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('on')});
+  document.querySelector('[data-tab="cases"]').classList.add('on');
+  document.getElementById('tab-cases').classList.add('on');
+  filterCases();
+}
+
+// ── Drawer ────────────────────────────────────────────
+var CASE_MAP = {};
+(D.cases||[]).forEach(function(c){ CASE_MAP[c.id] = c; });
+
+function openCase(id){
+  var c = CASE_MAP[id];
+  if(!c) return;
+  document.getElementById('dId').textContent = c.id;
+  document.getElementById('dName').textContent = c.name;
+  document.getElementById('dMeta').textContent = [c.vendorType, c.category, c.state].filter(Boolean).join(' · ');
+  document.getElementById('dBadge').innerHTML = statusBadge(c.currentStatus);
+  showDTab('overview', c);
+  document.getElementById('overlay').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+  lucide.createIcons();
+}
+
+function closeDrawer(){
+  document.getElementById('overlay').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+}
+
+document.querySelectorAll('.dtab').forEach(function(dt){
+  dt.addEventListener('click', function(){
+    var id = dt.dataset.dtab;
+    var c  = CASE_MAP[document.getElementById('dId').textContent];
+    document.querySelectorAll('.dtab').forEach(function(d){d.classList.remove('on')});
+    dt.classList.add('on');
+    if(c) showDTab(id, c);
+  });
+});
+
+function showDTab(tab, c){
+  document.querySelectorAll('.dtab').forEach(function(d){
+    d.classList.toggle('on', d.dataset.dtab===tab);
+  });
+  var b = document.getElementById('dbody');
+  if(tab==='overview')  b.innerHTML = renderOverview(c);
+  if(tab==='journey')   b.innerHTML = renderJourney(c);
+  if(tab==='documents') b.innerHTML = renderDocuments(c);
+  if(tab==='activity')  b.innerHTML = renderActivity(c);
+  lucide.createIcons();
+}
+
+function field(label, val){
+  return '<div class="ditem"><div class="dk">'+label+'</div><div class="dv">'+(val||'—')+'</div></div>';
+}
+
+function renderOverview(c){
+  return '<div>'+
+    '<div class="dlbl">Case Details</div>'+
+    '<div class="dgrid">'+
+      field('Case ID', c.id)+
+      field('GSTIN', c.gstin||'—')+
+      field('State', c.state)+
+      field('Vertical', c.vendorType)+
+      field('Category', c.category)+
+      field('Current Status', c.currentStatus)+
+      field('Stage', c.stage)+
+      field('SLA Status', c.slaStatus)+
+    '</div>'+
+  '</div>'+
+  '<div>'+
+    '<div class="dlbl">Dates &amp; TAT</div>'+
+    '<div class="dgrid">'+
+      field('Created', c.createdDate)+
+      field('Review Submitted', c.reviewDate||'—')+
+      field('Onboarded', c.onboardedDate||'—')+
+      field('First Shipment', c.firstShipment||'—')+
+      field('Status Changed On', c.statusChangedOn||'—')+
+      field('TAT (created→onboarded)', fmtDays(c.tatDays))+
+      field('Age (days since created)', fmtDays(c.ageDays))+
+      field('Days in Current Stage', fmtDays(c.stageDays))+
+    '</div>'+
+  '</div>'+
+  (c.ltv ? '<div><div class="dlbl">Value</div><div class="dgrid">'+field('Lifetime Value', '₹'+fmt(c.ltv))+'</div></div>' : '');
+}
+
+function checkIcon(done){ return done ? '✓' : '·'; }
+
+function renderJourney(c){
+  var steps = [
+    {name:'Lead Created',      done:!!c.createdDate,  date:c.createdDate,   r1:'',    r2:''},
+    {name:'Docs Submitted',    done:!!c.reviewDate,   date:c.reviewDate,    r1:'',    r2:''},
+    {name:'L1 Review',         done:!!c.level1,       date:c.level1,        r1:c.l1r1,r2:c.l1r2},
+    {name:'L2 Committee',      done:!!c.level2,       date:c.level2,        r1:c.l2r1,r2:c.l2r2},
+    {name:'L3 Approval',       done:!!c.level3,       date:c.level3,        r1:c.l3r1,r2:c.l3r2},
+    {name:'Activation',        done:!!c.onboardedDate,date:c.onboardedDate, r1:'',    r2:''}
+  ];
+  var html = '<div class="dlbl">Process Tracker</div><div class="tracker">';
+  steps.forEach(function(s, i){
+    var cls = s.done ? 'done' : (i>0 && steps[i-1].done ? 'active' : 'pending');
+    var connCls = s.done ? 'done' : '';
+    html += '<div class="tr-step">'+
+      '<div class="tr-line">'+
+        '<div class="tr-dot '+cls+'">'+(s.done?'✓':'·')+'</div>'+
+        (i<steps.length-1 ? '<div class="tr-conn '+connCls+'"></div>' : '')+
+      '</div>'+
+      '<div class="tr-body">'+
+        '<div class="tr-name">'+s.name+'</div>'+
+        (s.date ? '<div class="tr-meta">'+s.date+'</div>' : '')+
+        (s.r1 ? '<span class="tr-reject">Rejected: '+s.r1+'</span>' : '')+
+        (s.r2 ? '<span class="tr-reject" style="margin-left:4px">Re-rejected: '+s.r2+'</span>' : '')+
+      '</div>'+
+    '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderDocuments(c){
+  var uploaded = [c.reviewDate, c.level1, c.level2, c.level3].filter(Boolean).length;
+  var total    = 5;
+  var pending  = total - uploaded;
+  var verified = [c.level1, c.level2, c.level3].filter(Boolean).length;
+  var rejected = [c.l1r1,c.l1r2,c.l2r1,c.l2r2,c.l3r1,c.l3r2].filter(Boolean).length;
+
+  return '<div>'+
+    '<div class="dlbl">Document Summary</div>'+
+    '<div class="doc-grid">'+
+      '<div class="doc-item"><div class="doc-num">'+total+'</div><div class="doc-lbl">Required</div></div>'+
+      '<div class="doc-item" style="border-color:var(--accent-bg)"><div class="doc-num" style="color:var(--accent)">'+uploaded+'</div><div class="doc-lbl">Uploaded</div></div>'+
+      '<div class="doc-item" style="border-color:var(--amber-light)"><div class="doc-num" style="color:var(--amber)">'+pending+'</div><div class="doc-lbl">Pending</div></div>'+
+      '<div class="doc-item" style="border-color:var(--green-light)"><div class="doc-num" style="color:var(--green)">'+verified+'</div><div class="doc-lbl">Verified</div></div>'+
+      '<div class="doc-item" style="border-color:var(--red-light)"><div class="doc-num" style="color:var(--red)">'+rejected+'</div><div class="doc-lbl">Rejected</div></div>'+
+    '</div>'+
+  '</div>'+
+  '<div>'+
+    '<div class="dlbl">Approval Workflow</div>'+
+    '<div class="dgrid">'+
+      field('L1 Date', c.level1||'Pending')+
+      field('L1 Rejection 1', c.l1r1||'—')+
+      field('L2 Date', c.level2||'Pending')+
+      field('L2 Rejection 1', c.l2r1||'—')+
+      field('L3 Date', c.level3||'Pending')+
+      field('L3 Rejection 1', c.l3r1||'—')+
+    '</div>'+
+  '</div>';
+}
+
+function renderActivity(c){
+  var events = [];
+  if(c.createdDate)    events.push({ev:'Lead Created',       date:c.createdDate,    col:'#1A56DB'});
+  if(c.reviewDate)     events.push({ev:'Docs Submitted',     date:c.reviewDate,     col:'#7C3AED'});
+  if(c.l1r1)          events.push({ev:'L1 Review — Rejected',date:c.l1r1,          col:'#DC2626'});
+  if(c.l1r2)          events.push({ev:'L1 Re-Rejected',      date:c.l1r2,          col:'#DC2626'});
+  if(c.level1)        events.push({ev:'L1 Approved',         date:c.level1,         col:'#059669'});
+  if(c.l2r1)          events.push({ev:'L2 Rejected',         date:c.l2r1,           col:'#DC2626'});
+  if(c.level2)        events.push({ev:'L2 Committee Approved',date:c.level2,        col:'#059669'});
+  if(c.l3r1)          events.push({ev:'L3 Rejected',         date:c.l3r1,           col:'#DC2626'});
+  if(c.level3)        events.push({ev:'L3 Approved',         date:c.level3,         col:'#059669'});
+  if(c.onboardedDate) events.push({ev:'Activated / Onboarded',date:c.onboardedDate, col:'#059669'});
+  if(c.firstShipment) events.push({ev:'First Shipment',       date:c.firstShipment,  col:'#0891B2'});
+
+  if(!events.length) return '<div class="empty">No activity recorded</div>';
+
+  return events.reverse().map(function(ev){
+    return '<div class="act-item">'+
+      '<div class="act-av" style="background:'+ev.col+'">'+ev.ev.charAt(0)+'</div>'+
+      '<div class="act-body">'+
+        '<div class="act-event">'+ev.ev+'</div>'+
+        '<div class="act-time">'+ev.date+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── INIT ──────────────────────────────────────────────
+buildKPIs();
+buildFunnel();
+buildTrendChart();
+buildVertChart();
+buildTATChart();
+buildCatTable('catTbl', false);
+buildCatTable('catTbl2', true);
+buildVertTable();
+buildLTVTable();
+buildSLACards();
+buildUrgencyList();
+buildStateBars();
+buildPendingActions();
+buildStageCards();
+populateFilters();
+filterCases();
+lucide.createIcons();
+</script>
+</body>
+</html>

@@ -65,6 +65,7 @@ function getRawCases() {
 }
 
 // ── Derive current pipeline stage ───────────────────
+// Correct flow: Lead → In Progress → In Review (committee) → L1 Approval → L2 Approval → L3 Approval → Onboarded
 function deriveStage(c) {
   var cs = String(c.current_status || '').toUpperCase();
   if (cs === 'ONBOARDED')   return 'Onboarded';
@@ -75,9 +76,10 @@ function deriveStage(c) {
   if (cs === 'REJECTED')    return 'Rejected';
   if (c._hasL4) return 'Onboarded';
   if (c._hasL3) return 'L3 Approval';
-  if (c._hasL2) return 'L2 Committee';
-  if (c._hasL1) return 'In Review';
-  if (c.review_submission_date) return 'In Progress';
+  if (c._hasL2) return 'L2 Approval';   // after L2 approved, awaiting L3
+  if (c._hasL1) return 'L1 Approval';   // after committee, L1 approved, awaiting L2
+  if (c.review_submission_date) return 'In Review';  // docs submitted; committee reviewing
+  if (cs === 'IN_PROGRESS' || cs === 'INPROGRESS') return 'In Progress';
   return 'Lead';
 }
 
@@ -127,6 +129,7 @@ function buildDashboardPayload() {
   // ── Pipeline funnel counts ────────────────────────
   var lvlCounts = {
     registered  : total,
+    inReview    : cases.filter(function(c){ return !!c.review_submission_date; }).length,
     l1Done      : cases.filter(function(c){ return c._hasL1; }).length,
     l2Done      : cases.filter(function(c){ return c._hasL2; }).length,
     l3Done      : cases.filter(function(c){ return c._hasL3; }).length,
@@ -174,10 +177,10 @@ function buildDashboardPayload() {
              deactivated:d.deactivated, active:d.active, avgTAT:avg(d.tats), ltv:Math.round(d.ltv) };
   });
 
-  // ── Vertical breakdown ────────────────────────────
+  // ── Vertical breakdown (Business Vertical: Marketplace, Open Marketplace, EPR…) ──
   var vertMap = {};
   cases.forEach(function(c){
-    var vt = String(c.vendor_type || 'Other').trim() || 'Other';
+    var vt = String(c.business_vertical || c.vertical || c.vendor_vertical || 'Other').trim() || 'Other';
     if (!vertMap[vt]) vertMap[vt] = { total:0, onboarded:0, churned:0, deactivated:0, active:0, tats:[], ltv:0 };
     vertMap[vt].total++;
     var cs = String(c.current_status||'').toUpperCase();
@@ -272,15 +275,17 @@ function buildDashboardPayload() {
   // ── Cases for table (limit 1000) ──────────────────
   var tableCases = cases.slice(0, 1000).map(function(c){
     return {
-      id             : c.id,
-      name           : String(c.business_name||'').trim(),
-      gstin          : String(c.gstin_number||'').trim(),
-      city           : String(c.city||'').trim(),
-      state          : String(c.state||'').trim(),
-      category       : String(c.business_category||'').trim(),
-      vendorType     : String(c.vendor_type||'').trim(),
-      status         : String(c.status||'').trim(),
-      currentStatus  : String(c.current_status||'').trim(),
+      id               : c.id,
+      name             : String(c.business_name||c.party_name||'').trim(),
+      gstin            : String(c.gstin_number||c.gstin||'').trim(),
+      city             : String(c.city||'').trim(),
+      state            : String(c.state||'').trim(),
+      category         : String(c.business_category||c.category||'').trim(),
+      businessVertical : String(c.business_vertical||c.vertical||c.vendor_vertical||'').trim(),
+      vendorType       : String(c.vendor_type||c.customer_vendor_type||'').trim(),
+      partyType        : String(c.party_type||'').trim(),
+      status           : String(c.status||'').trim(),
+      currentStatus    : String(c.current_status||'').trim(),
       stage          : c._stage,
       createdDate    : String(c.created_date||'').trim(),
       onboardedDate  : String(c.onboarded_date||'').trim(),

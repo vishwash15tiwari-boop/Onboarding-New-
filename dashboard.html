@@ -350,7 +350,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
       <div class="chart-box"><canvas id="trendChart"></canvas></div>
     </div></div>
     <div class="card"><div class="cp">
-      <div class="sec-hdr"><div class="sec-title">Vertical Split</div></div>
+      <div class="sec-hdr"><div class="sec-title">Business Vertical Split</div></div>
       <div class="chart-box"><canvas id="vertChart"></canvas></div>
     </div></div>
   </div>
@@ -409,7 +409,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 ════════════════════════════════════════════ -->
 <div class="tab-pane" id="tab-business">
   <div class="card"><div class="cp">
-    <div class="sec-hdr"><div class="sec-title">By Vertical (Vendor Type)</div></div>
+    <div class="sec-hdr"><div class="sec-title">By Business Vertical</div><div class="sec-sub">Marketplace · Open Marketplace · EPR · Sustainability</div></div>
     <div class="tbl-wrap"><table class="itbl">
       <thead><tr><th>Vertical</th><th>Total</th><th>Active</th><th>Onboarded</th><th>Churned</th><th>Deactivated</th><th>Avg TAT</th><th>LTV (&#8377;)</th></tr></thead>
       <tbody id="vertTbl"></tbody>
@@ -452,7 +452,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
         <select class="fsel" id="fStage"  onchange="filterCases()">
           <option value="">All Stages</option>
           <option>Lead</option><option>In Progress</option><option>In Review</option>
-          <option>L2 Committee</option><option>L3 Approval</option>
+          <option>L1 Approval</option><option>L2 Approval</option><option>L3 Approval</option>
           <option>Onboarded</option><option>Reactivated</option>
           <option>Churned</option><option>Deactivated</option>
           <option>Sent Back</option><option>Rejected</option>
@@ -496,7 +496,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
         <button class="qpill qamb"  id="qp-dueToday"  onclick="quickPill('dueToday')">Due Today</button>
         <button class="qpill qpur"  id="qp-sentBack"  onclick="quickPill('sentBack')">Sent Back</button>
         <button class="qpill qblu"  id="qp-awaitDocs" onclick="quickPill('awaitDocs')">Awaiting Docs</button>
-        <button class="qpill qblu"  id="qp-awaitL1"   onclick="quickPill('awaitL1')">Awaiting L1</button>
+        <button class="qpill qblu"  id="qp-awaitL1"   onclick="quickPill('awaitL1')">In Review</button>
         <button class="qpill qblu"  id="qp-awaitL2"   onclick="quickPill('awaitL2')">Awaiting L2</button>
         <button class="qpill qblu"  id="qp-awaitL3"   onclick="quickPill('awaitL3')">Awaiting L3</button>
         <button class="qpill qgrn"  id="qp-onboarded" onclick="quickPill('onboarded')">Onboarded</button>
@@ -622,7 +622,7 @@ function buildKPIs(){
   var kpis=[
     {lbl:'Total Cases',   val:D.total,           icon:'users',          color:'#1A56DB',bg:'#EEF2FF',sub:'All registered'},
     {lbl:'Onboarded',     val:onb,               icon:'check-circle-2', color:'#059669',bg:'#ECFDF5',sub:pct(onb,D.total)+'% conversion',pct:pct(onb,D.total),barColor:'#059669'},
-    {lbl:'In Review',     val:p.l1Done||0,       icon:'eye',            color:'#7C3AED',bg:'#F5F3FF',sub:'L1+ approval stage'},
+    {lbl:'In Review',     val:pa.awaitingL1||0,  icon:'eye',            color:'#7C3AED',bg:'#F5F3FF',sub:'Committee reviewing'},
     {lbl:'In Progress',   val:pa.awaitingDocs||0,icon:'clock',          color:'#D97706',bg:'#FFFBEB',sub:'Docs pending'},
     {lbl:'Churned',       val:bs.CHURNED||0,     icon:'user-minus',     color:'#DC2626',bg:'#FEF2F2',sub:pct(bs.CHURNED||0,D.total)+'% of total'},
     {lbl:'Deactivated',   val:bs.DEACTIVATED||0, icon:'user-x',         color:'#6B7280',bg:'#F9FAFB',sub:'Inactive accounts'},
@@ -647,12 +647,12 @@ function buildKPIs(){
 function buildFunnel(){
   var p=D.pipeline||{};
   var stages=[
-    {name:'Registered',   num:p.registered||0, color:'#1A56DB'},
-    {name:'L1 Review',    num:p.l1Done||0,     color:'#7C3AED'},
-    {name:'L2 Committee', num:p.l2Done||0,     color:'#D97706'},
-    {name:'L3 Approval',  num:p.l3Done||0,     color:'#0891B2'},
-    {name:'L4 Final',     num:p.l4Done||0,     color:'#059669'},
-    {name:'Onboarded',    num:p.onboarded||0,  color:'#059669'}
+    {name:'Registered',  num:p.registered||0, color:'#1A56DB'},
+    {name:'In Review',   num:p.inReview||0,   color:'#7C3AED'},
+    {name:'L1 Approved', num:p.l1Done||0,     color:'#D97706'},
+    {name:'L2 Approved', num:p.l2Done||0,     color:'#0891B2'},
+    {name:'L3 Approved', num:p.l3Done||0,     color:'#059669'},
+    {name:'Onboarded',   num:p.onboarded||0,  color:'#059669'}
   ];
   var max=p.registered||1;
   document.getElementById('funnel').innerHTML=stages.map(function(s,i){
@@ -797,8 +797,8 @@ function buildPendingActions(){
   var pa=D.pendingActions||{};
   var items=[
     {icon:'upload-cloud',    color:'#7C3AED',bg:'#F5F3FF',val:pa.awaitingDocs||0, lbl:'Awaiting Docs Upload',  q:'awaitDocs'},
-    {icon:'file-check',      color:'#1A56DB',bg:'#EEF2FF',val:pa.awaitingL1||0,   lbl:'Awaiting L1 Review',    q:'awaitL1'},
-    {icon:'users',           color:'#0891B2',bg:'#ECFEFF',val:pa.awaitingL2||0,   lbl:'Awaiting L2 Committee', q:'awaitL2'},
+    {icon:'eye',             color:'#1A56DB',bg:'#EEF2FF',val:pa.awaitingL1||0,   lbl:'In Review (Committee)', q:'awaitL1'},
+    {icon:'file-check',      color:'#0891B2',bg:'#ECFEFF',val:pa.awaitingL2||0,   lbl:'Awaiting L2 Approval',  q:'awaitL2'},
     {icon:'shield-check',    color:'#059669',bg:'#ECFDF5',val:pa.awaitingL3||0,   lbl:'Awaiting L3 Approval',  q:'awaitL3'},
     {icon:'corner-down-left',color:'#D97706',bg:'#FFFBEB',val:pa.sentBack||0,     lbl:'Sent Back',             q:'sentBack'},
     {icon:'alert-triangle',  color:'#DC2626',bg:'#FEF2F2',val:pa.tatBreached||0,  lbl:'TAT Breached',          q:'overdue'}
@@ -814,9 +814,9 @@ function buildPendingActions(){
 // ── Stage Cards ───────────────────────────────────────
 function buildStageCards(){
   var sb=D.stageBreakdown||[];
-  var order=['Lead','In Progress','In Review','L2 Committee','L3 Approval','Onboarded','Reactivated','Churned','Deactivated','Sent Back','Rejected'];
-  sb.sort(function(a,b){return (order.indexOf(a.stage)||99)-(order.indexOf(b.stage)||99);});
-  var sc={Lead:'#1A56DB','In Progress':'#7C3AED','In Review':'#D97706','L2 Committee':'#0891B2','L3 Approval':'#059669',Onboarded:'#059669',Churned:'#DC2626',Deactivated:'#6B7280',Reactivated:'#0891B2','Sent Back':'#D97706',Rejected:'#DC2626'};
+  var order=['Lead','In Progress','In Review','L1 Approval','L2 Approval','L3 Approval','Onboarded','Reactivated','Churned','Deactivated','Sent Back','Rejected'];
+  sb.sort(function(a,b){var ai=order.indexOf(a.stage);var bi=order.indexOf(b.stage);return (ai<0?99:ai)-(bi<0?99:bi);});
+  var sc={Lead:'#1A56DB','In Progress':'#D97706','In Review':'#7C3AED','L1 Approval':'#0891B2','L2 Approval':'#EA580C','L3 Approval':'#059669',Onboarded:'#059669',Churned:'#DC2626',Deactivated:'#6B7280',Reactivated:'#0891B2','Sent Back':'#D97706',Rejected:'#DC2626'};
   var max=sb.length?Math.max.apply(null,sb.map(function(s){return s.count;})):1;
   document.getElementById('stageCards').innerHTML=sb.map(function(s){
     var col=sc[s.stage]||'#6B7280';
@@ -854,9 +854,11 @@ function goExplorer(pill, stage){
 var COLS=[
   {id:'id',       label:'ID',            key:'id',           visible:true,  always:true},
   {id:'vendor',   label:'Vendor',        key:'name',         visible:true,  always:true},
-  {id:'state',    label:'State',         key:'state',        visible:true,  always:false},
-  {id:'vertical', label:'Vertical',      key:'vendorType',   visible:true,  always:false},
-  {id:'category', label:'Category',      key:'category',     visible:true,  always:false},
+  {id:'state',    label:'State',            key:'state',           visible:true,  always:false},
+  {id:'vertical', label:'Business Vertical',key:'businessVertical', visible:true,  always:false},
+  {id:'category', label:'Category',         key:'category',        visible:true,  always:false},
+  {id:'cvtype',   label:'Cust/Vendor Type', key:'vendorType',      visible:false, always:false},
+  {id:'ptype',    label:'Party Type',       key:'partyType',       visible:false, always:false},
   {id:'stage',    label:'Stage',         key:'stage',        visible:true,  always:false},
   {id:'sla',      label:'SLA',           key:'slaStatus',    visible:true,  always:false},
   {id:'age',      label:'Age (d)',       key:'ageDays',      visible:true,  always:false},
@@ -877,8 +879,10 @@ function getColCell(col, c){
     case 'id':       return '<span class="cid">'+esc(c.id)+'</span>';
     case 'vendor':   return '<span class="vname" title="'+esc(c.name)+'">'+esc(c.name)+'</span>'+(c.gstin?'<span class="gstin">'+esc(c.gstin)+'</span>':'');
     case 'state':    return (c.city?'<span style="font-size:11px;font-weight:600">'+esc(c.city)+'</span><br>':'')+'<span style="font-size:10px;color:var(--text3)">'+esc(c.state)+'</span>';
-    case 'vertical': return esc(c.vendorType||'—');
+    case 'vertical': return esc(c.businessVertical||'—');
     case 'category': return esc(c.category||'—');
+    case 'cvtype':   return esc(c.vendorType||'—');
+    case 'ptype':    return esc(c.partyType||'—');
     case 'stage':    return esc(c.stage||'—');
     case 'sla':      return slaBadge(c.slaStatus);
     case 'age':      return c.ageDays!=null?'<span style="font-weight:600;color:'+(c.ageDays>30?'var(--red)':c.ageDays>25?'var(--orange)':'inherit')+'">'+c.ageDays+'d</span>':'—';
@@ -954,7 +958,7 @@ function renderTableBody(rows){
 // ── Populate filter dropdowns ─────────────────────────
 function populateFilters(){
   var cases=D.cases||[];
-  var verts=[...new Set(cases.map(function(c){return c.vendorType}).filter(Boolean))].sort();
+  var verts=[...new Set(cases.map(function(c){return c.businessVertical}).filter(Boolean))].sort();
   var cats =[...new Set(cases.map(function(c){return c.category}).filter(Boolean))].sort();
   var states=[...new Set(cases.map(function(c){return c.state}).filter(Boolean))].sort();
   var statuses=[...new Set(cases.map(function(c){return c.currentStatus}).filter(Boolean))].sort();
@@ -1002,7 +1006,7 @@ function filterCases(){
             (c.city||'').toLowerCase().includes(q)||
             (c.contactPerson||'').toLowerCase().includes(q))) return false;
     // Dropdowns
-    if(fv   && c.vendorType    !==fv)   return false;
+    if(fv   && c.businessVertical !==fv) return false;
     if(fc   && c.category      !==fc)   return false;
     if(fst  && c.state         !==fst)  return false;
     if(fs   && c.stage         !==fs)   return false;
@@ -1108,12 +1112,14 @@ function filterBySLA(status){
 
 // ── CSV Export ────────────────────────────────────────
 function exportCSV(){
-  var headers=['ID','Vendor Name','GSTIN','City','State','Vertical','Category','Stage','SLA Status',
-    'Age (days)','Created Date','Review Date','L1 Date','L1 Rej1','L2 Date','L2 Rej1','L3 Date','L3 Rej1',
+  var headers=['ID','Party Name','GSTIN','City','State','Business Vertical','Category','Cust/Vendor Type','Party Type',
+    'Stage','SLA Status','Age (days)','Created Date','Review Date (Committee)',
+    'L1 Approval','L1 Rej1','L2 Approval','L2 Rej1','L3 Approval','L3 Rej1',
     'Onboarded Date','First Shipment','TAT (days)','Current Status','LTV (INR)','Remarks'];
   var rows=CUR_CASES.map(function(c){
-    return [c.id,c.name,c.gstin,c.city||'',c.state,c.vendorType,c.category,c.stage,c.slaStatus,
-      c.ageDays!=null?c.ageDays:'',c.createdDate,c.reviewDate,c.level1,c.l1r1,c.level2,c.l2r1,c.level3,c.l3r1,
+    return [c.id,c.name,c.gstin,c.city||'',c.state,c.businessVertical||'',c.category,c.vendorType||'',c.partyType||'',
+      c.stage,c.slaStatus,c.ageDays!=null?c.ageDays:'',c.createdDate,c.reviewDate,
+      c.level1,c.l1r1,c.level2,c.l2r1,c.level3,c.l3r1,
       c.onboardedDate,c.firstShipment,c.tatDays!=null?c.tatDays:'',c.currentStatus,c.ltv||'',c.remarks||''];
   });
   var csv=([headers].concat(rows)).map(function(r){
@@ -1208,9 +1214,9 @@ function renderOverview(c){
     '<div class="dgrid">'+
       fi('Lead Created',   esc(c.createdDate||'—'))+
       fi('Docs Submitted', esc(c.reviewDate||'—'))+
-      fi('L1 Approved',    c.level1?'<span class="date-done">'+esc(c.level1)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
-      fi('L2 Approved',    c.level2?'<span class="date-done">'+esc(c.level2)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
-      fi('L3 Approved',    c.level3?'<span class="date-done">'+esc(c.level3)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
+      fi('L1 Approval',    c.level1?'<span class="date-done">'+esc(c.level1)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
+      fi('L2 Approval',    c.level2?'<span class="date-done">'+esc(c.level2)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
+      fi('L3 Approval',    c.level3?'<span class="date-done">'+esc(c.level3)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
       fi('Onboarded',      c.onboardedDate?'<span class="date-done">'+esc(c.onboardedDate)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
       fi('First Shipment', esc(c.firstShipment||'—'))+
       fi('TAT (created→onboarded)', c.tatDays!=null?c.tatDays+'d':'—')+
@@ -1222,18 +1228,12 @@ function renderOverview(c){
 
 function renderJourney(c){
   var steps=[
-    {name:'Lead Created',    done:!!c.createdDate,   date:c.createdDate,   icon:'flag',
-     r1:'',r2:''},
-    {name:'Docs Submitted',  done:!!c.reviewDate,    date:c.reviewDate,    icon:'upload-cloud',
-     r1:'',r2:''},
-    {name:'L1 Review',       done:!!c.level1,        date:c.level1,        icon:'user-check',
-     r1:c.l1r1,r2:c.l1r2},
-    {name:'L2 Committee',    done:!!c.level2,        date:c.level2,        icon:'users',
-     r1:c.l2r1,r2:c.l2r2},
-    {name:'L3 Approval',     done:!!c.level3,        date:c.level3,        icon:'shield-check',
-     r1:c.l3r1,r2:c.l3r2},
-    {name:'L4 / Activation', done:!!c.onboardedDate, date:c.onboardedDate, icon:'check-circle-2',
-     r1:c.l4r1||'',r2:c.l4r2||''},
+    {name:'Lead Registered',      done:!!c.createdDate,   date:c.createdDate,   icon:'flag',          r1:'',r2:''},
+    {name:'Docs Submitted',       done:!!c.reviewDate,    date:c.reviewDate,    icon:'upload-cloud',  r1:'',r2:''},
+    {name:'L1 Approval',          done:!!c.level1,        date:c.level1,        icon:'user-check',    r1:c.l1r1,r2:c.l1r2},
+    {name:'L2 Approval',          done:!!c.level2,        date:c.level2,        icon:'users',         r1:c.l2r1,r2:c.l2r2},
+    {name:'L3 Approval',          done:!!c.level3,        date:c.level3,        icon:'shield-check',  r1:c.l3r1,r2:c.l3r2},
+    {name:'Activation / Onboarded',done:!!c.onboardedDate,date:c.onboardedDate, icon:'check-circle-2',r1:c.l4r1||'',r2:c.l4r2||''},
   ];
   var html='<div class="dlbl">Process Tracker</div><div class="tracker">';
   // Find first incomplete step to mark as "active"
@@ -1288,13 +1288,13 @@ function renderDocuments(c){
   '<div class="dsection">'+
     '<div class="dlbl">Approval Workflow Detail</div>'+
     '<div class="dgrid">'+
-      fi('L1 Approval Date',  c.level1?'<span class="date-done">'+esc(c.level1)+'</span>':'Pending')+
+      fi('L1 Approval',       c.level1?'<span class="date-done">'+esc(c.level1)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
       fi('L1 Rejection 1',    esc(c.l1r1||'—'))+
       fi('L1 Rejection 2',    esc(c.l1r2||'—'))+
-      fi('L2 Approval Date',  c.level2?'<span class="date-done">'+esc(c.level2)+'</span>':'Pending')+
+      fi('L2 Approval',       c.level2?'<span class="date-done">'+esc(c.level2)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
       fi('L2 Rejection 1',    esc(c.l2r1||'—'))+
       fi('L2 Rejection 2',    esc(c.l2r2||'—'))+
-      fi('L3 Approval Date',  c.level3?'<span class="date-done">'+esc(c.level3)+'</span>':'Pending')+
+      fi('L3 Approval',       c.level3?'<span class="date-done">'+esc(c.level3)+'</span>':'<span style="color:var(--text3)">Pending</span>')+
       fi('L3 Rejection 1',    esc(c.l3r1||'—'))+
       fi('L3 Rejection 2',    esc(c.l3r2||'—'))+
       fi('L4 / Final',        c.level4?'<span class="date-done">'+esc(c.level4)+'</span>':'Pending')+

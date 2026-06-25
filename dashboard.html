@@ -1344,14 +1344,16 @@ function renderOverview(c){
   return '<div class="dsection">'+
     '<div class="dlbl">Case Identity</div>'+
     '<div class="dgrid">'+
-      fi('Case ID',    esc(c.id))+
-      fi('GSTIN',      '<span style="font-family:monospace;font-size:11px">'+esc(c.gstin||'—')+'</span>')+
-      fi('Vendor Name',esc(c.name),true)+
-      fi('State',      esc(c.state))+
-      fi('City',       esc(c.city||'—'))+
-      fi('Vertical',   esc(c.vendorType||'—'))+
-      fi('Category',   esc(c.category||'—'))+
-      fi('Contact',    esc(c.contactPerson||'—'))+
+      fi('Case ID',          esc(c.id))+
+      fi('GSTIN',            '<span style="font-family:monospace;font-size:11px">'+esc(c.gstin||'—')+'</span>')+
+      fi('Vendor Name',      esc(c.name),true)+
+      fi('State',            esc(c.state||'—'))+
+      fi('City',             esc(c.city||'—'))+
+      fi('Business Vertical',esc(c.businessVertical||'—'))+
+      fi('Cust/Vendor Type', esc(c.vendorType||'—'))+
+      fi('Party Type',       esc(c.partyType||'—'))+
+      fi('Category',         esc(c.category||'—'))+
+      fi('Contact',          esc(c.contactPerson||'—'))+
     '</div>'+
   '</div>'+
   '<div class="dsection">'+
@@ -1487,6 +1489,12 @@ function renderActivity(c){
 }
 
 // ── INIT ──────────────────────────────────────────────
+// Log detected columns for debugging
+if (D._sheetHeaders && D._sheetHeaders.length) {
+  console.log('[Onboarding CT] Sheet columns detected (' + D._sheetHeaders.length + '):', D._sheetHeaders.join(', '));
+  console.log('[Onboarding CT] Total cases loaded:', D.total);
+  console.log('[Onboarding CT] Cases in table:', D.cases ? D.cases.length : 0);
+}
 buildKPIs();
 buildFunnel();
 buildTrendChart();
